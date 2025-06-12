@@ -1,0 +1,90 @@
+type User {
+  id: ID!
+  email: String!
+  name: String!
+  avatarUrl: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Category {
+  id: ID!
+  name: String!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Link {
+  id: ID!
+  url: String!
+  title: String
+  price: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type WishlistItem {
+  id: ID!
+  name: String!
+  description: String
+  category: Category
+  rating: Int
+  links: [Link!]!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Wishlist {
+  id: ID!
+  name: String!
+  description: String
+  category: Category
+  owner: User!
+  items: [WishlistItem!]!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Query {
+  wishlists: [Wishlist!]!
+  wishlist(id: ID!): Wishlist
+  categories: [Category!]!
+}
+
+type Mutation {
+  createWishlist(input: CreateWishlistInput!): MutationResponse!
+  createWishlistItem(input: CreateWishlistItemInput!): MutationResponse!
+  createLink(input: CreateLinkInput!): MutationResponse!
+  createCategory(input: CreateCategoryInput!): MutationResponse!
+}
+
+type MutationResponse {
+  success: Boolean!
+  message: String
+}
+
+input CreateWishlistInput {
+  name: String!
+  description: String
+  categoryId: ID
+}
+
+input CreateWishlistItemInput {
+  wishlistId: ID!
+  name: String!
+  description: String
+  categoryId: ID
+  rating: Int
+}
+
+input CreateLinkInput {
+  wishlistItemId: ID!
+  url: String!
+  title: String
+  price: String
+}
+
+input CreateCategoryInput {
+  name: String!
+}
+
