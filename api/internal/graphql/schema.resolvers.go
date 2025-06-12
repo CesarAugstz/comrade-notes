@@ -8,6 +8,7 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/cesaraugstz/comrade-notes/api/internal/auth"
 	"github.com/cesaraugstz/comrade-notes/api/internal/database"
 )
 
@@ -104,6 +105,38 @@ func (r *mutationResolver) CreateCategory(ctx context.Context, input CreateCateg
 	return &MutationResponse{Success: true}, nil
 }
 
+// CreateUser is the resolver for the createUser field.
+func (r *mutationResolver) CreateUser(ctx context.Context, input CreateUserInput) (*MutationResponse, error) {
+	var exists bool
+	err := r.DB.WithContext(ctx).
+		Model(&database.User{}).
+		Select("1").
+		Where("email = ?", input.Email).
+		First(&exists).Error
+
+	if err == nil {
+		return &MutationResponse{Success: false, Message: stringPtr("user already exists")}, nil
+	}
+
+	hashed_password, err := auth.HashPassword(input.Password)
+
+	if err != nil {
+		return &MutationResponse{Success: false, Message: stringPtr("error while hashing the password")}, nil
+	}
+
+	user := &database.User{
+		Email:    input.Email,
+		Name:     input.Name,
+		Password: hashed_password,
+	}
+
+	if err := r.DB.WithContext(ctx).Create(user).Error; err != nil {
+		return &MutationResponse{Success: false, Message: stringPtr("failed to create user")}, nil
+	}
+
+	return &MutationResponse{Success: true}, nil
+}
+
 // Wishlists is the resolver for the wishlists field.
 func (r *queryResolver) Wishlists(ctx context.Context) ([]*Wishlist, error) {
 	userID := getUserIDFromContext(ctx)
@@ -168,3 +201,33 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+/*
+	func (r *mutationResolver) Login(ctx context.Context, input Login) (*LoginResponse, error) {
+	var user database.User
+
+	if err := r.DB.WithContext(ctx).Model(&database.User{}).Where("email = ?", input.Username).Find(&user); err != nil {
+		panic("user doesn't exists")
+	}
+
+	password_match := auth.CheckPasswordHash(user.Password, input.Password)
+
+	if !password_match {
+		panic("password doesn't match")
+	}
+
+	userReturn := convertUser(&user)
+
+	return &LoginResponse{
+		Token: "",
+		User:  userReturn,
+	}, nil
+
+}
+*/

@@ -20,6 +20,12 @@ type CreateLinkInput struct {
 	Price          *string `json:"price,omitempty"`
 }
 
+type CreateUserInput struct {
+	Email    string `json:"email"`
+	Name     string `json:"name"`
+	Password string `json:"password"`
+}
+
 type CreateWishlistInput struct {
 	Name        string  `json:"name"`
 	Description *string `json:"description,omitempty"`

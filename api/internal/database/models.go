@@ -10,9 +10,10 @@ type User struct {
 	Email     string    `gorm:"uniqueIndex;not null" json:"email"`
 	Name      string    `gorm:"not null" json:"name"`
 	AvatarURL string    `json:"avatar_url"`
-	GoogleID  string    `gorm:"uniqueIndex;not null" json:"google_id"`
+	GoogleID  string    `gorm:"not null" json:"google_id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+  Password  string    `json:"password"`
 }
 
 type Category struct {

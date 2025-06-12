@@ -7,25 +7,29 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 
 	"github.com/cesaraugstz/comrade-notes/api/internal/database"
+	appErrors "github.com/cesaraugstz/comrade-notes/api/internal/shared/errors"
 )
 
 type AuthHandlers struct {
-	oauth    *OAuthService
-	jwt      *JWTService
-	db       *gorm.DB
-	sessions map[string]time.Time
+	oauth     *OAuthService
+	jwt       *JWTService
+	db        *gorm.DB
+	sessions  map[string]time.Time
+	validator *validator.Validate
 }
 
 func NewAuthHandlers(oauth *OAuthService, jwt *JWTService, db *gorm.DB) *AuthHandlers {
 	return &AuthHandlers{
-		oauth:    oauth,
-		jwt:      jwt,
-		db:       db,
-		sessions: make(map[string]time.Time),
+		oauth:     oauth,
+		jwt:       jwt,
+		db:        db,
+		sessions:  make(map[string]time.Time),
+		validator: validator.New(),
 	}
 }
 
@@ -66,7 +70,7 @@ func (h *AuthHandlers) GoogleCallback(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "failed to generate token"})
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
+	return c.JSON(http.StatusOK, map[string]any{
 		"token": jwtToken,
 		"user":  user,
 	})
@@ -76,6 +80,7 @@ func (h *AuthHandlers) findOrCreateUser(googleUser *GoogleUser) (*database.User,
 	var user database.User
 
 	err := h.db.Where("google_id = ?", googleUser.ID).First(&user).Error
+
 	if err == nil {
 		return &user, nil
 	}
@@ -96,6 +101,42 @@ func (h *AuthHandlers) findOrCreateUser(googleUser *GoogleUser) (*database.User,
 	}
 
 	return &user, nil
+}
+
+func (h *AuthHandlers) UsernameLogin(c echo.Context) error {
+	var req LoginRequest
+
+	if err := c.Bind(&req); err != nil {
+		return appErrors.ErrInvalidInput
+	}
+
+	if err := h.validator.Struct(req); err != nil {
+		return appErrors.NewAppError("VALIDATION_ERROR", "Invalid input: "+err.Error(), http.StatusBadRequest)
+	}
+
+	var user database.User
+	if err := h.db.Where("email = ?", req.Login).First(&user).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return appErrors.ErrInvalidCredentials
+		}
+		return appErrors.ErrInternalServer
+	}
+
+	if !CheckPasswordHash(req.Password, user.Password) {
+		return appErrors.ErrInvalidCredentials
+	}
+
+	jwtToken, err := h.jwt.GenerateToken(user.ID, user.Email)
+	if err != nil {
+		return appErrors.ErrTokenGeneration
+	}
+
+	user.Password = ""
+
+	return c.JSON(http.StatusOK, AuthResponse{
+		Token: jwtToken,
+		User:  user,
+	})
 }
 
 func generateRandomString(length int) string {
