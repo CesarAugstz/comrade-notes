@@ -8,11 +8,17 @@ interface Props {
   name: string
   label?: string
   placeholder?: string
+  onKeyDown?: (e?: React.KeyboardEvent<HTMLInputElement>) => void
 }
 
 type InputType = 'password' | 'text'
 
-export default function FormPasswordField({ name, label, placeholder }: Props) {
+export default function FormPasswordField({
+  name,
+  label,
+  placeholder,
+  onKeyDown,
+}: Props) {
   const [field, meta] = useField(name)
   const [inputType, setInputType] = useState<InputType>('password')
   const invalid = !!(meta?.error && meta?.touched)
@@ -26,7 +32,13 @@ export default function FormPasswordField({ name, label, placeholder }: Props) {
       {label && <Field.Label>{label}</Field.Label>}
 
       <div className="relative">
-        <Input {...field} placeholder={placeholder} type={inputType} pr="12" />
+        <Input
+          {...field}
+          onKeyDown={onKeyDown}
+          placeholder={placeholder}
+          type={inputType}
+          pr="12"
+        />
         <IconButton
           aria-label={
             inputType === 'password' ? 'Show password' : 'Hide password'

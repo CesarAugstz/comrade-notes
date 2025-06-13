@@ -1,41 +1,73 @@
-import { Box, Card, Stack, Text, Alert } from '@chakra-ui/react'
-import { useCallback, useState } from 'react'
+import { Box, Card, Stack, Text } from '@chakra-ui/react'
+import { useState } from 'react'
 import FormTextField from '../../../shared/form/components/form-text-field'
 import FormPasswordField from '../../../shared/form/components/form-password-field'
-import { Form, FormikProvider, useFormik } from 'formik'
+import { FormikProvider, useFormik } from 'formik'
 import * as Yup from 'yup'
 import FormSubmitButton from '../../../shared/form/components/form-submit-button'
+import { axiosInstance } from '../../../shared/api/axios'
+import { Alert } from '../../../components/ui/alert'
+import { toaster } from '../../../components/ui/toaster'
+import { useAuthStore } from '../../../shared/store/auth.store'
+import { useNavigate } from 'react-router'
+
+type FormValues = {
+  login: string
+  password: string
+}
 
 export default function LoginForm() {
   const [loginError, setLoginError] = useState<string | null>(null)
   const schema = Yup.object().shape({
-    username: Yup.string().min(1, 'Username is required').required(),
+    login: Yup.string().min(1, 'Username is required').required(),
     password: Yup.string()
-      .min(6, 'Password must be at least 6 characters')
+      .min(3, 'Password must be at least 3 characters')
       .required(),
   })
+  const saveLoginStore = useAuthStore(state => state.login)
+  const navigation = useNavigate()
 
-  const form = useFormik({
+  const form = useFormik<FormValues>({
     initialValues: {
-      username: '',
+      login: '',
       password: '',
     },
     validationSchema: schema,
-    onSubmit: e => console.log('submit', e),
+    onSubmit: async values => {
+      setLoginError(null)
+
+      console.log('values', values)
+      try {
+        const res = await axiosInstance.post('/auth/login', {
+          ...values,
+        })
+
+        const messageError = res?.data?.message ?? res?.data?.error?.message
+
+        console.log('res', res, messageError)
+
+        if (messageError || !res?.data?.token) {
+          setLoginError(messageError ?? 'An error occured')
+          return
+        }
+        toaster.success({ title: 'Login success' })
+
+        const { token, user } = res?.data ?? {}
+
+        saveLoginStore(token, user)
+        navigation('/')
+
+        console.log('login sucesful')
+      } catch (e: any) {
+        console.error('Error on login', e)
+        const messageError =
+          e?.response?.data?.message ?? e?.response?.data?.error?.message
+        console.log('message', messageError)
+        setLoginError(messageError ?? 'An error occured')
+      }
+    },
     validateOnBlur: true,
   })
-
-  const onSubmit = useCallback(async () => {
-    const errors = await form.validateForm()
-
-    console.log('errors', errors)
-    if (Object.values(errors).map(x => x)) {
-      await form.setTouched({ username: true, password: true })
-      return
-    }
-
-    form.handleSubmit()
-  }, [form])
 
   return (
     <Card.Root
@@ -65,25 +97,32 @@ export default function LoginForm() {
         )}
 
         <FormikProvider value={form}>
-          <Form>
-            <Stack gap="5">
-              <FormTextField
-                placeholder="Type your username"
-                label="username"
-                name="username"
-              />
+          <Stack gap="5">
+            <FormTextField
+              placeholder="Type your username"
+              label="Username"
+              name="login"
+            />
 
-              <FormPasswordField
-                placeholder="Type your password"
-                label="password"
-                name="password"
-              />
+            <FormPasswordField
+              placeholder="Type your password"
+              label="password"
+              name="password"
+              onKeyDown={e => e?.key === 'Enter' && form.handleSubmit()}
+            />
 
-              <Box pt="4">
-                <FormSubmitButton />
-              </Box>
-            </Stack>
-          </Form>
+            <Box pt="4">
+              <FormSubmitButton
+                className="w-full"
+                onClick={async e => {
+                  console.log('handlesubmit')
+                  e?.preventDefault()
+                  console.log('isvalie', await form.validateForm())
+                  form.handleSubmit()
+                }}
+              />
+            </Box>
+          </Stack>
         </FormikProvider>
       </Card.Body>
     </Card.Root>
