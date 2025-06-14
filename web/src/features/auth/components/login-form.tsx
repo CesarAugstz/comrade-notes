@@ -1,15 +1,13 @@
-import { Box, Card, Stack, Text } from '@chakra-ui/react'
 import { useState } from 'react'
-import FormTextField from '../../../shared/form/components/form-text-field'
-import FormPasswordField from '../../../shared/form/components/form-password-field'
+import FormTextField from '../../../shared/components/form/components/form-text-field'
+import FormPasswordField from '../../../shared/components/form/components/form-password-field'
 import { FormikProvider, useFormik } from 'formik'
 import * as Yup from 'yup'
-import FormSubmitButton from '../../../shared/form/components/form-submit-button'
+import FormSubmitButton from '../../../shared/components/form/components/form-submit-button'
 import { axiosInstance } from '../../../shared/api/axios'
-import { Alert } from '../../../components/ui/alert'
-import { toaster } from '../../../components/ui/toaster'
 import { useAuthStore } from '../../../shared/store/auth.store'
 import { useNavigate } from 'react-router'
+import toast from 'react-hot-toast'
 
 type FormValues = {
   login: string
@@ -47,7 +45,7 @@ export default function LoginForm() {
           setLoginError(messageError ?? 'An error occured')
           return
         }
-        toaster.success({ title: 'Login success' })
+        toast.success('Login success')
 
         const { token, user } = res?.data ?? {}
 
@@ -64,27 +62,25 @@ export default function LoginForm() {
   })
 
   return (
-    <Card.Root maxW="md" mx="auto" p="8" bg="bg" shadow="lg" borderRadius="xl">
-      <Card.Header pb="6">
-        <Stack gap="2" textAlign="center">
-          <Text fontSize="3xl" fontWeight="bold" color="primary.950">
+    <div className="card w-full max-w-md mx-auto bg-base-100 shadow-xl">
+      <div className="card-body">
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold text-base-content mb-2">
             Welcome Back
-          </Text>
-          <Text color="primary.600" fontSize="lg">
+          </h1>
+          <p className="text-base-content/70 text-lg">
             Sign in to your account
-          </Text>
-        </Stack>
-      </Card.Header>
+          </p>
+        </div>
 
-      <Card.Body>
         {loginError && (
-          <Alert status="error" mb="6" borderRadius="md">
-            {loginError}
-          </Alert>
+          <div className="alert alert-error mb-6">
+            <span>{loginError}</span>
+          </div>
         )}
 
         <FormikProvider value={form}>
-          <Stack gap="5">
+          <div className="space-y-5">
             <FormTextField
               placeholder="Type your username"
               label="Username"
@@ -98,18 +94,18 @@ export default function LoginForm() {
               onKeyDown={e => e?.key === 'Enter' && form.handleSubmit()}
             />
 
-            <Box pt="4">
+            <div className="pt-4">
               <FormSubmitButton
-                className="w-full"
+                className="btn-primary w-full"
                 onClick={async e => {
                   e?.preventDefault()
                   form.handleSubmit()
                 }}
               />
-            </Box>
-          </Stack>
+            </div>
+          </div>
         </FormikProvider>
-      </Card.Body>
-    </Card.Root>
+      </div>
+    </div>
   )
 }

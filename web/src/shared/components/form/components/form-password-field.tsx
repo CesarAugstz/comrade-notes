@@ -1,4 +1,3 @@
-import { Field, Input, IconButton } from '@chakra-ui/react'
 import { useCallback, useState } from 'react'
 import { BsEye } from 'react-icons/bs'
 import { FiEyeOff } from 'react-icons/fi'
@@ -28,36 +27,40 @@ export default function FormPasswordField({
   }, [inputType])
 
   return (
-    <Field.Root invalid={invalid}>
-      {label && <Field.Label>{label}</Field.Label>}
+    <div className="form-control w-full">
+      {label && (
+        <label className="label">
+          <span className="label-text">{label}</span>
+        </label>
+      )}
 
-      <div className="relative w-full">
-        <Input
+      <div className="relative">
+        <input
           {...field}
           onKeyDown={onKeyDown}
           placeholder={placeholder}
           type={inputType}
-          pr="12"
+          className={`input input-bordered w-full pr-12 ${
+            invalid ? 'input-error' : ''
+          }`}
         />
-        <IconButton
+        <button
+          type="button"
+          onClick={toggleInput}
+          className="btn btn-ghost btn-sm absolute right-3 top-1/2 -translate-y-1/2 text-base-content/50 hover:text-base-content/70"
           aria-label={
             inputType === 'password' ? 'Show password' : 'Hide password'
           }
-          onClick={toggleInput}
-          variant="ghost"
-          size="sm"
-          position="absolute"
-          right="3"
-          top="50%"
-          transform="translateY(-50%)"
-          color="primary.500"
-          _hover={{ color: 'primary.700' }}
         >
           {inputType === 'text' ? <BsEye /> : <FiEyeOff />}
-        </IconButton>
+        </button>
       </div>
 
-      <Field.ErrorText>{meta.error}</Field.ErrorText>
-    </Field.Root>
+      {meta.error && meta.touched && (
+        <label className="label">
+          <span className="label-text-alt text-error">{meta.error}</span>
+        </label>
+      )}
+    </div>
   )
 }

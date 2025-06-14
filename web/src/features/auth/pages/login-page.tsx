@@ -1,31 +1,24 @@
-import { Box, Container, Stack, Text, Flex } from '@chakra-ui/react'
-import LoginForm from '../components/LoginForm'
+import LoginForm from '../components/login-form'
 import { useState } from 'react'
-import SingupForm from '../components/SingupForm'
+import SingupForm from '../components/singup-form'
 import { AnimatePresence, motion } from 'motion/react'
 
 export default function LoginPage() {
   const [isSingup, setIsSingup] = useState(false)
 
   return (
-    <Box
-      minH="100vh"
-      bg="linear-gradient(135deg, primary.50 0%, secondary.50 100%)"
-      display="flex"
-      alignItems="center"
-      py="12"
-    >
-      <Container maxW="lg" px="6">
-        <Stack gap="8" align="center">
-          <Box textAlign="center">
-            <Text fontSize="4xl" fontWeight="bold" color="primary.950" mb="2">
+    <div className="min-h-screen bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center py-12">
+      <div className="container mx-auto px-6 max-w-4xl">
+        <div className="flex flex-col items-center space-y-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-base-content mb-2">
               Comrade Notes
-            </Text>
-            <Text fontSize="lg" color="primary.700" maxW="md">
+            </h1>
+            <p className="text-lg text-base-content/70 max-w-md">
               Your collaborative note-taking platform for seamless teamwork and
               productivity
-            </Text>
-          </Box>
+            </p>
+          </div>
 
           <AnimatePresence mode="wait">
             <motion.div
@@ -50,20 +43,17 @@ export default function LoginPage() {
             </motion.div>
           </AnimatePresence>
 
-          <Flex gap="1" fontSize="sm" color="primary.600">
-            <Text>Don't have an account?</Text>
-            <Text
-              color="secondary.600"
-              fontWeight="medium"
-              cursor="pointer"
+          <div className="flex gap-1 text-sm text-base-content/70">
+            <span>Don't have an account?</span>
+            <button
+              className="text-secondary font-medium cursor-pointer hover:text-secondary/80"
               onClick={() => setIsSingup(!isSingup)}
-              _hover={{ color: 'secondary.700' }}
             >
               Sign up here
-            </Text>
-          </Flex>
-        </Stack>
-      </Container>
-    </Box>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

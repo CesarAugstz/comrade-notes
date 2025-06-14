@@ -1,4 +1,3 @@
-import { Button } from '@chakra-ui/react'
 import { useFormikContext } from 'formik'
 
 interface Props {
@@ -10,14 +9,18 @@ interface Props {
 export default function FormSubmitButton({ text, onClick, className }: Props) {
   const { isSubmitting, errors } = useFormikContext()
   return (
-    <Button
+    <button
       type="submit"
-      loading={isSubmitting && !errors}
-      loadingText="Loading..."
       onClick={onClick}
-      className={className}
+      disabled={isSubmitting && !Object.keys(errors).length}
+      className={`btn ${className} ${
+        isSubmitting && !Object.keys(errors).length ? 'loading' : ''
+      }`}
     >
+      {isSubmitting && !Object.keys(errors).length ? (
+        <span className="loading loading-spinner"></span>
+      ) : null}
       {text ?? 'Submit'}
-    </Button>
+    </button>
   )
 }
