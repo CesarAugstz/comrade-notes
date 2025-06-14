@@ -1,19 +1,53 @@
 query GetWishlists {
   wishlists {
     id
+    name
+    description
+    owner {
+      id
       name
-      description
-      owner {
-        id
-          name
-          email
-      }
+      email
+    }
     items {
       id
-        name
-        description
-        rating
+      name
+      description
+      rating
+      createdAt
     }
   }
 }
 
+query GetWishlist($id: ID!) {
+  wishlist(id: $id) {
+    id
+    name
+    description
+    owner {
+      id
+      name
+      email
+    }
+    items {
+      id
+      name
+      description
+      rating
+      createdAt
+    }
+  }
+}
+
+mutation CreateWishlist($input: CreateWishlistInput!) {
+  createWishlist(input: $input) {
+    success
+    message
+  }
+}
+
+mutation CreateWishlistItem($input: CreateWishlistItemInput!) {
+  createWishlistItem(input: $input) {
+    success
+    message
+  }
+}

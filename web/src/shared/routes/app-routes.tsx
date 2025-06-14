@@ -2,7 +2,8 @@ import { Route, Routes, useNavigate } from 'react-router'
 import LoginPage from '../../features/auth/pages/login-page'
 import { useAuthStore } from '../store/auth.store'
 import { useEffect } from 'react'
-import Home from '../../features/home/home'
+import WishlistsPage from '../../features/wishlists/pages/wishlists-page'
+import WishlistDetailPage from '../../features/wishlists/pages/wishlist-detail-page'
 
 export default function AppRoutes() {
   const navigate = useNavigate()
@@ -14,7 +15,9 @@ export default function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/" index element={<Home />} />
+      <Route path="/" index element={<WishlistsPage />} />
+      <Route path="/wishlists" element={<WishlistsPage />} />
+      <Route path="/wishlists/:id" element={<WishlistDetailPage />} />
       <Route path="auth" element={<LoginPage />} />
     </Routes>
   )
