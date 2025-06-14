@@ -20,4 +20,5 @@ func (r *Routes) RegisterRoutes(e *echo.Echo) {
 	authGroup.GET("/google", r.handlers.GoogleLogin)
 	authGroup.GET("/google/callback", r.handlers.GoogleCallback)
 	authGroup.POST("/login", r.handlers.UsernameLogin)
+	authGroup.POST("/singup", r.handlers.Singup)
 }

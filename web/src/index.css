@@ -73,8 +73,8 @@
   color-scheme: light dark;
 
   /* Light mode */
-  color: #213547;
-  background-color: #ffffff;
+  color: var(--color-primary-800);
+  background-color: var(--color-primary-50);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -84,8 +84,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    color: rgba(255, 255, 255, 0.87);
-    background-color: #242424;
+    color: var(--color-primary-100);
+    background-color: var(--color-primary-950);
   }
 }
 

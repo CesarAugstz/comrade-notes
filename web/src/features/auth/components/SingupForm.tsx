@@ -8,55 +8,58 @@ import FormSubmitButton from '../../../shared/form/components/form-submit-button
 import { axiosInstance } from '../../../shared/api/axios'
 import { Alert } from '../../../components/ui/alert'
 import { toaster } from '../../../components/ui/toaster'
-import { useAuthStore } from '../../../shared/store/auth.store'
-import { useNavigate } from 'react-router'
 
 type FormValues = {
-  login: string
+  email: string
+  name: string
   password: string
+  confirmPassword: string
 }
 
-export default function LoginForm() {
+interface Props {
+  onSingup?: ({ email }: { email: string }) => void
+}
+
+export default function SingupForm({ onSingup }: Props) {
   const [loginError, setLoginError] = useState<string | null>(null)
+
   const schema = Yup.object().shape({
-    login: Yup.string().min(1, 'Username is required').required(),
+    email: Yup.string().email('Invalid email').required(),
+    name: Yup.string().min(1, 'Name is required').required(),
     password: Yup.string()
       .min(3, 'Password must be at least 3 characters')
       .required(),
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref('password'), ''], 'Passwords must match')
+      .required(),
   })
-  const saveLoginStore = useAuthStore(state => state.login)
-  const navigation = useNavigate()
 
   const form = useFormik<FormValues>({
     initialValues: {
-      login: '',
+      email: '',
+      name: '',
       password: '',
+      confirmPassword: '',
     },
     validationSchema: schema,
     onSubmit: async values => {
       setLoginError(null)
 
+      console.log('values', values)
       try {
-        const res = await axiosInstance.post('/auth/login', {
+        await axiosInstance.post('/auth/singup', {
           ...values,
         })
 
-        const messageError = res?.data?.message ?? res?.data?.error?.message
+        toaster.success({ title: 'Singup success' })
+        onSingup?.({ email: values.email })
 
-        if (messageError || !res?.data?.token) {
-          setLoginError(messageError ?? 'An error occured')
-          return
-        }
-        toaster.success({ title: 'Login success' })
-
-        const { token, user } = res?.data ?? {}
-
-        saveLoginStore(token, user)
-        navigation('/')
+        console.log('login sucesful')
       } catch (e: any) {
         console.error('Error on login', e)
         const messageError =
           e?.response?.data?.message ?? e?.response?.data?.error?.message
+        console.log('message', messageError)
         setLoginError(messageError ?? 'An error occured')
       }
     },
@@ -68,10 +71,10 @@ export default function LoginForm() {
       <Card.Header pb="6">
         <Stack gap="2" textAlign="center">
           <Text fontSize="3xl" fontWeight="bold" color="primary.950">
-            Welcome Back
+            Create an account
           </Text>
           <Text color="primary.600" fontSize="lg">
-            Sign in to your account
+            Join Comrade Notes
           </Text>
         </Stack>
       </Card.Header>
@@ -86,15 +89,27 @@ export default function LoginForm() {
         <FormikProvider value={form}>
           <Stack gap="5">
             <FormTextField
-              placeholder="Type your username"
-              label="Username"
-              name="login"
+              placeholder="Type your name"
+              label="Name"
+              name="name"
+            />
+
+            <FormTextField
+              placeholder="Type your email"
+              label="Email"
+              name="email"
             />
 
             <FormPasswordField
               placeholder="Type your password"
-              label="password"
+              label="Password"
               name="password"
+            />
+
+            <FormPasswordField
+              placeholder="Confirm your password"
+              label="Confirm password"
+              name="confirmPassword"
               onKeyDown={e => e?.key === 'Enter' && form.handleSubmit()}
             />
 

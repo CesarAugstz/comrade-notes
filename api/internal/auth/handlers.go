@@ -139,6 +139,39 @@ func (h *AuthHandlers) UsernameLogin(c echo.Context) error {
 	})
 }
 
+func (h *AuthHandlers) Singup(c echo.Context) error {
+	var req SingupRequest
+
+	if err := c.Bind(&req); err != nil {
+		return appErrors.ErrInvalidInput
+	}
+
+	if err := h.validator.Struct(req); err != nil {
+		return appErrors.NewAppError("VALIDATION_ERROR", "Invalid input: "+err.Error(), http.StatusBadRequest)
+	}
+
+	var user database.User
+
+  hashed_password, err := HashPassword(req.Password)
+
+	if err != nil {
+		return appErrors.ErrInternalServer
+	}
+
+	user = database.User{
+		Email:    req.Email,
+		Name:     req.Name,
+		Password: hashed_password,
+	}
+
+	if err := h.db.Create(&user).Error; err != nil {
+		return appErrors.ErrInternalServer
+	}
+
+  return c.JSON(http.StatusOK, map[string]string{"message": "User created"})
+}
+
+
 func generateRandomString(length int) string {
 	bytes := make([]byte, length/2)
 	rand.Read(bytes)

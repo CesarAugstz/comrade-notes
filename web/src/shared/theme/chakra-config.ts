@@ -4,7 +4,7 @@ const config = defineConfig({
   theme: {
     tokens: {
       colors: {
-        primary: {
+        'primary': {
           50: { value: '#f8f9fb' },
           100: { value: '#f1f3f6' },
           200: { value: '#e3e7ed' },
@@ -17,7 +17,7 @@ const config = defineConfig({
           900: { value: '#464c5f' },
           950: { value: '#02060e' },
         },
-        secondary: {
+        'secondary': {
           50: { value: '#f0f1ff' },
           100: { value: '#e4e6ff' },
           200: { value: '#cdd0ff' },
@@ -30,7 +30,7 @@ const config = defineConfig({
           900: { value: '#2e3396' },
           950: { value: '#1c1f5a' },
         },
-        accent: {
+        'accent': {
           50: { value: '#eff0ff' },
           100: { value: '#e2e4ff' },
           200: { value: '#c7ccff' },
@@ -42,6 +42,36 @@ const config = defineConfig({
           800: { value: '#262bab' },
           900: { value: '#252987' },
           950: { value: '#16184f' },
+        },
+        'bg': {
+          value: {
+            base: { value: 'primary.50' },
+            _dark: { value: 'primary.950' },
+          },
+        },
+        'bg.muted': {
+          value: {
+            base: { value: 'primary.100' },
+            _dark: { value: 'primary.900' },
+          },
+        },
+        'fg': {
+          value: {
+            base: { value: 'primary.950' },
+            _dark: { value: 'primary.50' },
+          },
+        },
+        'fg.muted': {
+          value: {
+            base: { value: 'primary.700' },
+            _dark: { value: 'primary.300' },
+          },
+        },
+        'border': {
+          value: {
+            base: { value: 'primary.200' },
+            _dark: { value: 'primary.800' },
+          },
         },
       },
       radii: {
@@ -59,6 +89,64 @@ const config = defineConfig({
         lg: {
           value:
             '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+        },
+      },
+    },
+    semanticTokens: {
+      colors: {
+        bg: {
+          DEFAULT: {
+            value: {
+              base: '{colors.primary.50}',
+              _dark: '{colors.primary.950}',
+            },
+          },
+          muted: {
+            value: {
+              base: '{colors.primary.100}',
+              _dark: '{colors.primary.900}',
+            },
+          },
+          subtle: {
+            value: {
+              base: '{colors.primary.200}',
+              _dark: '{colors.primary.800}',
+            },
+          },
+        },
+        fg: {
+          DEFAULT: {
+            value: {
+              base: '{colors.primary.950}',
+              _dark: '{colors.primary.50}',
+            },
+          },
+          muted: {
+            value: {
+              base: '{colors.primary.700}',
+              _dark: '{colors.primary.300}',
+            },
+          },
+          subtle: {
+            value: {
+              base: '{colors.primary.600}',
+              _dark: '{colors.primary.400}',
+            },
+          },
+        },
+        border: {
+          DEFAULT: {
+            value: {
+              base: '{colors.primary.200}',
+              _dark: '{colors.primary.800}',
+            },
+          },
+          muted: {
+            value: {
+              base: '{colors.primary.300}',
+              _dark: '{colors.primary.700}',
+            },
+          },
         },
       },
     },

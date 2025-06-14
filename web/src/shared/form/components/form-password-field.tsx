@@ -31,7 +31,7 @@ export default function FormPasswordField({
     <Field.Root invalid={invalid}>
       {label && <Field.Label>{label}</Field.Label>}
 
-      <div className="relative">
+      <div className="relative w-full">
         <Input
           {...field}
           onKeyDown={onKeyDown}
