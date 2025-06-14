@@ -1,0 +1,19 @@
+query GetWishlists {
+  wishlists {
+    id
+      name
+      description
+      owner {
+        id
+          name
+          email
+      }
+    items {
+      id
+        name
+        description
+        rating
+    }
+  }
+}
+
