@@ -2,3 +2,5 @@
 .history/
 
 .env
+.env.prod
+.env.dev

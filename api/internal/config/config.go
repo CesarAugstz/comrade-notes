@@ -21,6 +21,8 @@ type Config struct {
 	DBName         string
 	DBSSLMode      string
 	SeedDB         string
+  WebURL         string
+  EnableSingup    string
 }
 
 func Load() *Config {
@@ -40,6 +42,8 @@ func Load() *Config {
 		DBName:         getEnv("DB_NAME", "comrade_notes"),
 		DBSSLMode:      getEnv("DB_SSLMODE", "disable"),
 		SeedDB:         getEnv("SEED_DB", "true"),
+    WebURL:         getEnv("WEB_URL", "http://localhost:4173"),
+    EnableSingup:   getEnv("ENABLE_SIGNUP", "true"),
 	}
 
 	cfg.DatabaseURL = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",

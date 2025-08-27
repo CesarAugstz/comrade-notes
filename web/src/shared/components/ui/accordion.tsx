@@ -1,13 +1,13 @@
 import { useState, type ReactNode } from 'react'
 
 interface AccordionProps {
-  title: string
+  triggerContent: ReactNode | string
   children: ReactNode
   defaultOpen?: boolean
 }
 
 export default function Accordion({
-  title,
+  triggerContent,
   children,
   defaultOpen = false,
 }: AccordionProps) {
@@ -20,7 +20,7 @@ export default function Accordion({
         checked={isOpen}
         onChange={() => setIsOpen(!isOpen)}
       />
-      <div className="collapse-title text-xl font-medium">{title}</div>
+      <div className="collapse-title text-xl font-medium">{triggerContent}</div>
       <div className="collapse-content">{children}</div>
     </div>
   )

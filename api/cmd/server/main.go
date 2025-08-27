@@ -21,12 +21,18 @@ func main() {
 
 	e.Use(echoMiddleware.Logger())
 	e.Use(echoMiddleware.Recover())
-	e.Use(echoMiddleware.CORS())
+	e.Use(echoMiddleware.CORSWithConfig(echoMiddleware.CORSConfig{
+		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:3000", cfg.WebURL},
+		AllowMethods:     []string{echo.GET, echo.HEAD, echo.PUT, echo.PATCH, echo.POST, echo.DELETE},
+		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+		AllowCredentials: true,
+	}))
+
 	e.Use(middleware.ErrorHandler())
 
 	oauthService := auth.NewOAuthService(cfg)
 	jwtService := auth.NewJWTService(cfg.JWTSecret)
-	authHandlers := auth.NewAuthHandlers(oauthService, jwtService, db)
+	authHandlers := auth.NewAuthHandlers(oauthService, jwtService, db, cfg)
 
 	authRoutes := auth.NewRoutes(authHandlers)
 	authRoutes.RegisterRoutes(e)

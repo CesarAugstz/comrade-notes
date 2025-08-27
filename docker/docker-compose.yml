@@ -1,0 +1,72 @@
+services:
+  api:
+    image: ${API_IMAGE:-}
+    build:
+      context: ../api
+      dockerfile: Dockerfile
+      args:
+        PORT: ${PORT}
+        DB_HOST: ${DB_HOST}
+        DB_PORT: ${DB_PORT}
+        DB_USER: ${DB_USER}
+        DB_PASSWORD: ${DB_PASSWORD}
+        DB_NAME: ${DB_NAME}
+        DB_SSLMODE: ${DB_SSLMODE}
+        SEED_DB: ${SEED_DB}
+        WEB_URL: ${WEB_URL:-}
+    container_name: golang-api
+    ports:
+      - "420:420"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - api-network
+    restart: unless-stopped
+
+  web:
+    image: ${WEB_IMAGE:-}
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_API_URL_GRAPHQL: ${VITE_API_URL_GRAPHQL}
+    container_name: react-web
+    ports:
+      - "4173:4173"
+    networks:
+      - api-network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17.5
+    container_name: postgres-db
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 2s
+      timeout: 5s
+      retries: 5
+    networks:
+      - api-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  api-network:
+    driver: bridge
+

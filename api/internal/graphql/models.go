@@ -60,6 +60,19 @@ type MutationResponse struct {
 type Query struct {
 }
 
+type UpdateLinkInput struct {
+	URL   string  `json:"url"`
+	Title *string `json:"title,omitempty"`
+	Price *string `json:"price,omitempty"`
+}
+
+type UpdateWishlistItemInput struct {
+	Name        string  `json:"name"`
+	Description *string `json:"description,omitempty"`
+	CategoryID  *string `json:"categoryId,omitempty"`
+	Rating      *int    `json:"rating,omitempty"`
+}
+
 type User struct {
 	ID        string  `json:"id"`
 	Email     string  `json:"email"`

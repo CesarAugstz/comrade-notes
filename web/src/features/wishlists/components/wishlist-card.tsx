@@ -1,5 +1,5 @@
 import type { Wishlist } from '../../../generated/graphql'
-import Card from '../../../shared/components/ui/card'
+import { dayJs } from '../../../shared/utils/dayjs'
 
 interface WishlistCardProps {
   wishlist?: Wishlist
@@ -10,11 +10,16 @@ export default function WishlistCard({ wishlist, onClick }: WishlistCardProps) {
   if (!wishlist) return null
 
   return (
-    <Card onClick={onClick} className="h-full">
+    <div
+      className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow cursor-pointer"
+      onClick={onClick}
+    >
       <div className="card-body">
         <h2 className="card-title text-base-content">{wishlist.name}</h2>
         {wishlist.description && (
-          <p className="text-base-content/70">{wishlist.description}</p>
+          <p className="text-base-content/70 line-clamp-3">
+            {wishlist.description}
+          </p>
         )}
         <div className="flex justify-between items-center mt-4">
           <div className="badge badge-primary">
@@ -25,7 +30,10 @@ export default function WishlistCard({ wishlist, onClick }: WishlistCardProps) {
             by {wishlist.owner.name}
           </div>
         </div>
+        <div className="text-xs text-base-content/50 mt-2">
+          Created {dayJs(wishlist.createdAt).fromNow()}
+        </div>
       </div>
-    </Card>
+    </div>
   )
 }

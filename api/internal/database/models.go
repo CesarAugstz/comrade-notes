@@ -1,8 +1,9 @@
 package database
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type User struct {
@@ -13,7 +14,7 @@ type User struct {
 	GoogleID  string    `gorm:"not null" json:"google_id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-  Password  string    `json:"password"`
+	Password  string    `json:"password"`
 }
 
 type Category struct {

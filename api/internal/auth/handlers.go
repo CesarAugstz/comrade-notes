@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 
+	"github.com/cesaraugstz/comrade-notes/api/internal/config"
 	"github.com/cesaraugstz/comrade-notes/api/internal/database"
 	appErrors "github.com/cesaraugstz/comrade-notes/api/internal/shared/errors"
 )
@@ -21,15 +23,17 @@ type AuthHandlers struct {
 	db        *gorm.DB
 	sessions  map[string]time.Time
 	validator *validator.Validate
+	config    *config.Config
 }
 
-func NewAuthHandlers(oauth *OAuthService, jwt *JWTService, db *gorm.DB) *AuthHandlers {
+func NewAuthHandlers(oauth *OAuthService, jwt *JWTService, db *gorm.DB, cfg *config.Config) *AuthHandlers {
 	return &AuthHandlers{
 		oauth:     oauth,
 		jwt:       jwt,
 		db:        db,
 		sessions:  make(map[string]time.Time),
 		validator: validator.New(),
+		config:    cfg,
 	}
 }
 
@@ -140,6 +144,15 @@ func (h *AuthHandlers) UsernameLogin(c echo.Context) error {
 }
 
 func (h *AuthHandlers) Singup(c echo.Context) error {
+  fmt.Println("singup", h.config.EnableSingup)
+	if h.config.EnableSingup == "false" {
+		return &appErrors.AppError{
+			Code:    "FORBIDDEN",
+			Message: "Singup is disabled",
+			Status:  http.StatusForbidden,
+		}
+	}
+
 	var req SingupRequest
 
 	if err := c.Bind(&req); err != nil {
@@ -152,7 +165,7 @@ func (h *AuthHandlers) Singup(c echo.Context) error {
 
 	var user database.User
 
-  hashed_password, err := HashPassword(req.Password)
+	hashed_password, err := HashPassword(req.Password)
 
 	if err != nil {
 		return appErrors.ErrInternalServer
@@ -168,9 +181,8 @@ func (h *AuthHandlers) Singup(c echo.Context) error {
 		return appErrors.ErrInternalServer
 	}
 
-  return c.JSON(http.StatusOK, map[string]string{"message": "User created"})
+	return c.JSON(http.StatusOK, map[string]string{"message": "User created"})
 }
-
 
 func generateRandomString(length int) string {
 	bytes := make([]byte, length/2)

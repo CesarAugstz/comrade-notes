@@ -14,6 +14,13 @@ query GetWishlists {
       description
       rating
       createdAt
+      links {
+        id
+        url
+        title
+        price
+        createdAt
+      }
     }
   }
 }
@@ -34,20 +41,40 @@ query GetWishlist($id: ID!) {
       description
       rating
       createdAt
+      links {
+        id
+        url
+        title
+        price
+        createdAt
+      }
     }
   }
 }
 
-mutation CreateWishlist($input: CreateWishlistInput!) {
-  createWishlist(input: $input) {
-    success
-    message
+query GetWishlistItem($id: ID!) {
+  wishlistItem(id: $id) {
+    id
+    name
+    description
+    rating
+    createdAt
+    links {
+      id
+      url
+      title
+      price
+      createdAt
+    }
   }
 }
 
-mutation CreateWishlistItem($input: CreateWishlistItemInput!) {
-  createWishlistItem(input: $input) {
-    success
-    message
+query GetLink($id: ID!) {
+  link(id: $id) {
+    id
+    url
+    title
+    price
+    createdAt
   }
 }

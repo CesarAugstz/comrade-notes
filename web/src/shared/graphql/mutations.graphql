@@ -1,0 +1,48 @@
+mutation CreateWishlist($input: CreateWishlistInput!) {
+  createWishlist(input: $input) {
+    success
+    message
+  }
+}
+
+mutation CreateWishlistItem($input: CreateWishlistItemInput!) {
+  createWishlistItem(input: $input) {
+    success
+    message
+  }
+}
+
+mutation UpdateWishlistItem($id: ID!, $input: UpdateWishlistItemInput!) {
+  updateWishlistItem(id: $id, input: $input) {
+    success
+    message
+  }
+}
+
+mutation DeleteWishlistItem($id: ID!) {
+  deleteWishlistItem(id: $id) {
+    success
+    message
+  }
+}
+
+mutation CreateLink($input: CreateLinkInput!) {
+  createLink(input: $input) {
+    success
+    message
+  }
+}
+
+mutation UpdateLink($id: ID!, $input: UpdateLinkInput!) {
+  updateLink(id: $id, input: $input) {
+    success
+    message
+  }
+}
+
+mutation DeleteLink($id: ID!) {
+  deleteLink(id: $id) {
+    success
+    message
+  }
+}

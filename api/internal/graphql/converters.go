@@ -1,9 +1,10 @@
 package graphql
 
 import (
-	"github.com/cesaraugstz/comrade-notes/api/internal/database"
 	"strconv"
 	"time"
+
+	"github.com/cesaraugstz/comrade-notes/api/internal/database"
 )
 
 func convertWishlists(dbWishlists []database.Wishlist) []*Wishlist {

@@ -73,6 +73,50 @@ func (r *mutationResolver) CreateWishlistItem(ctx context.Context, input CreateW
 	return &MutationResponse{Success: true}, nil
 }
 
+// UpdateWishlistItem is the resolver for the updateWishlistItem field.
+func (r *mutationResolver) UpdateWishlistItem(ctx context.Context, id string, input UpdateWishlistItemInput) (*MutationResponse, error) {
+	itemID, err := strconv.ParseUint(id, 10, 32)
+	if err != nil {
+		return &MutationResponse{Success: false, Message: stringPtr("invalid item ID")}, nil
+	}
+
+	var categoryID *uint
+	if input.CategoryID != nil {
+		cID, err := strconv.ParseUint(*input.CategoryID, 10, 32)
+		if err != nil {
+			return &MutationResponse{Success: false, Message: stringPtr("invalid category ID")}, nil
+		}
+		categoryID = uintPtr(uint(cID))
+	}
+
+	updates := map[string]interface{}{
+		"name":        input.Name,
+		"description": stringValue(input.Description),
+		"category_id": categoryID,
+		"rating":      input.Rating,
+	}
+
+	if err := r.DB.WithContext(ctx).Model(&database.WishlistItem{}).Where("id = ?", itemID).Updates(updates).Error; err != nil {
+		return &MutationResponse{Success: false, Message: stringPtr("failed to update item")}, nil
+	}
+
+	return &MutationResponse{Success: true}, nil
+}
+
+// DeleteWishlistItem is the resolver for the deleteWishlistItem field.
+func (r *mutationResolver) DeleteWishlistItem(ctx context.Context, id string) (*MutationResponse, error) {
+	itemID, err := strconv.ParseUint(id, 10, 32)
+	if err != nil {
+		return &MutationResponse{Success: false, Message: stringPtr("invalid item ID")}, nil
+	}
+
+	if err := r.DB.WithContext(ctx).Delete(&database.WishlistItem{}, itemID).Error; err != nil {
+		return &MutationResponse{Success: false, Message: stringPtr("failed to delete item")}, nil
+	}
+
+	return &MutationResponse{Success: true}, nil
+}
+
 // CreateLink is the resolver for the createLink field.
 func (r *mutationResolver) CreateLink(ctx context.Context, input CreateLinkInput) (*MutationResponse, error) {
 	itemID, err := strconv.ParseUint(input.WishlistItemID, 10, 32)
@@ -89,6 +133,40 @@ func (r *mutationResolver) CreateLink(ctx context.Context, input CreateLinkInput
 
 	if err := r.DB.WithContext(ctx).Create(link).Error; err != nil {
 		return &MutationResponse{Success: false, Message: stringPtr("failed to create link")}, nil
+	}
+
+	return &MutationResponse{Success: true}, nil
+}
+
+// UpdateLink is the resolver for the updateLink field.
+func (r *mutationResolver) UpdateLink(ctx context.Context, id string, input UpdateLinkInput) (*MutationResponse, error) {
+	linkID, err := strconv.ParseUint(id, 10, 32)
+	if err != nil {
+		return &MutationResponse{Success: false, Message: stringPtr("invalid link ID")}, nil
+	}
+
+	updates := map[string]interface{}{
+		"url":   input.URL,
+		"title": stringValue(input.Title),
+		"price": input.Price,
+	}
+
+	if err := r.DB.WithContext(ctx).Model(&database.Link{}).Where("id = ?", linkID).Updates(updates).Error; err != nil {
+		return &MutationResponse{Success: false, Message: stringPtr("failed to update link")}, nil
+	}
+
+	return &MutationResponse{Success: true}, nil
+}
+
+// DeleteLink is the resolver for the deleteLink field.
+func (r *mutationResolver) DeleteLink(ctx context.Context, id string) (*MutationResponse, error) {
+	linkID, err := strconv.ParseUint(id, 10, 32)
+	if err != nil {
+		return &MutationResponse{Success: false, Message: stringPtr("invalid link ID")}, nil
+	}
+
+	if err := r.DB.WithContext(ctx).Delete(&database.Link{}, linkID).Error; err != nil {
+		return &MutationResponse{Success: false, Message: stringPtr("failed to delete link")}, nil
 	}
 
 	return &MutationResponse{Success: true}, nil
@@ -118,8 +196,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input CreateUserInput
 		return &MutationResponse{Success: false, Message: stringPtr("user already exists")}, nil
 	}
 
-	hashed_password, err := auth.HashPassword(input.Password)
-
+	hashedPassword, err := auth.HashPassword(input.Password)
 	if err != nil {
 		return &MutationResponse{Success: false, Message: stringPtr("error while hashing the password")}, nil
 	}
@@ -127,7 +204,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input CreateUserInput
 	user := &database.User{
 		Email:    input.Email,
 		Name:     input.Name,
-		Password: hashed_password,
+		Password: hashedPassword,
 	}
 
 	if err := r.DB.WithContext(ctx).Create(user).Error; err != nil {
@@ -144,13 +221,13 @@ func (r *queryResolver) Wishlists(ctx context.Context) ([]*Wishlist, error) {
 		return nil, nil
 	}
 
+  // TODO: filter by user or shared with
 	var dbWishlists []database.Wishlist
 	err := r.DB.WithContext(ctx).
 		Preload("Category").
 		Preload("Owner").
 		Preload("Items.Category").
 		Preload("Items.Links").
-		Where("owner_id = ?", userID).
 		Find(&dbWishlists).Error
 
 	if err != nil {
@@ -182,6 +259,42 @@ func (r *queryResolver) Wishlist(ctx context.Context, id string) (*Wishlist, err
 	return convertWishlist(&dbWishlist), nil
 }
 
+// WishlistItem is the resolver for the wishlistItem field.
+func (r *queryResolver) WishlistItem(ctx context.Context, id string) (*WishlistItem, error) {
+	itemID, err := strconv.ParseUint(id, 10, 32)
+	if err != nil {
+		return nil, err
+	}
+
+	var dbItem database.WishlistItem
+	err = r.DB.WithContext(ctx).
+		Preload("Category").
+		Preload("Links").
+		First(&dbItem, itemID).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return convertWishlistItem(&dbItem), nil
+}
+
+// Link is the resolver for the link field.
+func (r *queryResolver) Link(ctx context.Context, id string) (*Link, error) {
+	linkID, err := strconv.ParseUint(id, 10, 32)
+	if err != nil {
+		return nil, err
+	}
+
+	var dbLink database.Link
+	err = r.DB.WithContext(ctx).First(&dbLink, linkID).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return convertLink(&dbLink), nil
+}
+
 // Categories is the resolver for the categories field.
 func (r *queryResolver) Categories(ctx context.Context) ([]*Category, error) {
 	var dbCategories []database.Category
@@ -201,33 +314,3 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-/*
-	func (r *mutationResolver) Login(ctx context.Context, input Login) (*LoginResponse, error) {
-	var user database.User
-
-	if err := r.DB.WithContext(ctx).Model(&database.User{}).Where("email = ?", input.Username).Find(&user); err != nil {
-		panic("user doesn't exists")
-	}
-
-	password_match := auth.CheckPasswordHash(user.Password, input.Password)
-
-	if !password_match {
-		panic("password doesn't match")
-	}
-
-	userReturn := convertUser(&user)
-
-	return &LoginResponse{
-		Token: "",
-		User:  userReturn,
-	}, nil
-
-}
-*/
