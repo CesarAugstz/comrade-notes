@@ -1,0 +1,19 @@
+#!/bin/bash
+
+if [ -z "$TMUX" ]; then
+    echo "Error: This script must be run from within a tmux session."
+    exit 1
+fi
+
+API_CMD="cd api && go run cmd/server/main.go; exec $SHELL"
+WEB_CMD="cd web && pnpm dev; exec $SHELL"
+
+WINDOW_ID=$(tmux new-window -P -F '#{window_id}' -n "dev" "$API_CMD")
+
+tmux split-window -h -t "$WINDOW_ID.0" "$WEB_CMD"
+
+tmux select-layout -t "$WINDOW_ID" even-horizontal
+tmux select-pane -t "$WINDOW_ID.0"
+tmux select-window -t "$WINDOW_ID"
+
+echo "🚀 'dev' window created. Check each pane for potential error messages."
